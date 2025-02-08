@@ -31,6 +31,30 @@ void init_gpio() {
     P1OUT |= BIT2; // pull-up
 }
 
+void red_led_on() {
+    P1OUT |= RED_LED;
+}
+
+void red_led_off() {
+    P1OUT &= ~RED_LED;
+}
+
+void red_led_toggle() {
+    P1OUT ^= RED_LED;
+}
+
+void green_led_on() {
+    P4OUT |= GREEN_LED;
+}
+
+void green_led_off() {
+    P4OUT &= ~GREEN_LED;
+}
+
+void green_led_toggle() {
+    P4OUT ^= GREEN_LED;
+}
+
 void buzzer_on() {
     P4OUT |= BIT3;
 }
@@ -45,4 +69,18 @@ void buzzer_toggle() {
 
 uint8_t is_button_pressed() {
     return (P1IN & BIT2) == 0;
+}
+
+uint8_t is_button_clicked() {
+    static volatile int was_pressed = 0;
+    volatile int pressed = is_button_pressed();
+
+    if (pressed && !was_pressed) {
+        was_pressed = 1;
+        return 1;
+        __delay_cycles(100000); // debounce
+    } else if (!pressed) {
+        was_pressed = 0;
+    }
+    return 0;
 }

@@ -16,10 +16,19 @@
 
 void init_gpio();
 
+void red_led_on();
+void red_led_off();
+void red_led_toggle();
+
+void green_led_on();
+void green_led_off();
+void green_led_toggle();
+
 void buzzer_on();
 void buzzer_off();
 void buzzer_toggle();
 
 uint8_t is_button_pressed();
+uint8_t is_button_clicked();
 
 #endif /* GPIO_H_ */
