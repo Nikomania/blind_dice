@@ -7,26 +7,25 @@
 
 #include <timer.h>
 
-// Função para configurar o timer TA0
-void config_timerA0(void) {
+void init_timerA0(void) {
     TA0CTL = TASSEL__ACLK
     | MC__UP
+    | ID_3
     | TACLR;
 }
 
-void config_timerA1() {
-    TA1CTL = TASSEL__ACLK
-    | MC__UP
-    | TACLR
-    | ID_2;
+void set_timerA0_interruption(int is_interruptable) {
+    if (is_interruptable) {
+        TA0CCTL0 |= CCIE;
+        return;
+    }
+    TA0CCTL0 &= ~CCIE;
 }
 
-void set_timerA0_maxtime(unsigned int time) {
-    TA0CCR0 = time;
-}
-
-void set_timerA1_maxtime(unsigned int time) {
-    TA1CCR0 = time;
+void set_timerA0_maxtime(unsigned int time_ms) {
+    // explanation in notebook
+    const unsigned int time = time_ms / 125;
+    TA0CCR0 = time << 9;
 }
 
 void reset_timerA0() {
@@ -35,7 +34,7 @@ void reset_timerA0() {
 }
 
 void wait_timerA0() {
-    while((TA0CTL&TAIFG) == 0) {} // Esperar a flag
+    while((TA0CTL&TAIFG) == 0);
 }
 
 void reset_wait_timerA0() {
@@ -43,25 +42,6 @@ void reset_wait_timerA0() {
     wait_timerA0();
 }
 
-void reset_timerA1() {
-    TA1CTL |= TACLR;
-    TA1CTL &= ~TAIFG;
-}
-
-void wait_timerA1() {
-    while((TA1CTL&TAIFG) == 0) {} // Esperar a flag
-}
-
-int times_up_A1() {
-    return (TA1CTL&TAIFG) == 0;
-}
-
-void reset_wait_timerA1() {
-    reset_timerA1();
-    wait_timerA1();
-}
-
 unsigned int get_timerA0() {
     return TA0R;
 }
-

@@ -6,7 +6,7 @@
  */
 #include <i2c.h>
 
-void initI2C_Master(void) {
+void init_i2c(void) {
     UCB0CTL1 |= UCSWRST;                    // Reseta para iniciar a configuração
     UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;   // Mestre, I2C (MODE = 3), síncrono
     UCB0CTL1 = UCSSEL_2 | UCSWRST;          // Usa SMCLK (1 MHz), mantém reset
@@ -15,7 +15,7 @@ void initI2C_Master(void) {
     UCB0CTL1 &= ~UCSWRST;                   // Limpa reset para terminar a configuração
 }
 
-uint8_t i2cTest(uint8_t slave_addr) {
+uint8_t i2c_test(uint8_t slave_addr) {
     UCB0I2CSA = slave_addr;
     UCB0CTL1 |= UCTR;
     UCB0CTL1 |= UCTXSTT;
@@ -28,7 +28,7 @@ uint8_t i2cTest(uint8_t slave_addr) {
         return 0;
 }
 
-void i2cSend(uint8_t slave_addr, uint8_t register_addr, uint8_t data) {
+void i2c_send(uint8_t slave_addr, uint8_t register_addr, uint8_t data) {
     // Aguarda qualquer transmissão em andamento finalizar
     while (UCB0CTL1 & UCTXSTP);
 
@@ -56,7 +56,7 @@ void i2cSend(uint8_t slave_addr, uint8_t register_addr, uint8_t data) {
     while ( (UCB0CTL1 & UCTXSTP) == UCTXSTP); //Esperar STOP
 }
 
-void i2cRead(uint8_t slave_addr, uint8_t register_addr, uint8_t* byte) {
+void i2c_read(uint8_t slave_addr, uint8_t register_addr, uint8_t* byte) {
     // Aguarda qualquer transmissão em andamento finalizar
     while (UCB0CTL1 & UCTXSTP);
 
@@ -88,7 +88,7 @@ void i2cRead(uint8_t slave_addr, uint8_t register_addr, uint8_t* byte) {
     *byte = UCB0RXBUF;
 }
 
-void i2cReadVect(uint8_t slave_addr, uint8_t register_addr, uint8_t byte_count, volatile uint8_t* data) {
+void i2c_read_vect(uint8_t slave_addr, uint8_t register_addr, uint8_t byte_count, volatile uint8_t* data) {
     // Aguarda qualquer transmissão em andamento finalizar
     while (UCB0CTL1 & UCTXSTP);
 
@@ -129,13 +129,3 @@ void i2cReadVect(uint8_t slave_addr, uint8_t register_addr, uint8_t byte_count, 
 
      while ( (UCB0CTL1 & UCTXSTP) == UCTXSTP); //Esperar STOP
 }
-
-uint8_t i2cTestNack() {
-    if((UCB0IFG & UCNACKIFG) == UCNACKIFG) {
-        UCB0CTL1 |= UCTXSTP;                // Gera condição de STOP
-        while(UCB0CTL1 & UCTXSTP);          // Aguarda STOP completar
-        return 0;                           // Retorna falha - NACK recebido
-    }
-    return 1;
-}
-

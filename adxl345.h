@@ -24,10 +24,10 @@ struct accel {
     int z;
 };
 
-void ADXL345Config();
-void ADXL345CheckDevId();
-void ADXL345CheckI2C();
-void ADXL345GetData(struct accel* accel_data);
+void init_ADXL345();
+void ADXL345_check_devid();
+void ADXL345_check_i2c();
+void ADXL345_get_data(struct accel* accel_data);
 
 
 #endif /* ADXL345_H_ */

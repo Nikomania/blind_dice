@@ -9,16 +9,16 @@
 #include <i2c.h>
 #include <gpio.h>
 
-void ADXL345CheckI2C() {
-    if (i2cTest(ADXL345_ADDR) == 0) {
+void ADXL345_check_i2c() {
+    if (i2c_test(ADXL345_ADDR) == 0) {
         red_led_on();
         while(1);
     }
 }
 
-void ADXL345CheckDevId() {
+void ADXL345_check_devid() {
     uint8_t devid;
-    i2cRead(ADXL345_ADDR, ADXL345_DEVID_ADDR, &devid);
+    i2c_read(ADXL345_ADDR, ADXL345_DEVID_ADDR, &devid);
     if (devid != ADXL345_DEVID_VAL) {
         while(1) {
             red_led_toggle();
@@ -27,19 +27,19 @@ void ADXL345CheckDevId() {
     }
 }
 
-void ADXL345Config() {
-    ADXL345CheckI2C();
-    ADXL345CheckDevId();
+void init_ADXL345() {
+    ADXL345_check_i2c();
+    ADXL345_check_devid();
 
-    i2cSend(ADXL345_ADDR, ADXL345_POWER_CTL, 0); // wakeup
-    i2cSend(ADXL345_ADDR, ADXL345_POWER_CTL, 16); // auto_sleep
-    i2cSend(ADXL345_ADDR, ADXL345_POWER_CTL, 8); // measure
+    i2c_send(ADXL345_ADDR, ADXL345_POWER_CTL, 0); // wakeup
+    i2c_send(ADXL345_ADDR, ADXL345_POWER_CTL, 16); // auto_sleep
+    i2c_send(ADXL345_ADDR, ADXL345_POWER_CTL, 8); // measure
 }
 
-void ADXL345GetData(struct accel* accel_data) {
+void ADXL345_get_data(struct accel* accel_data) {
     uint8_t data[ADXL345_BYTES_SENT];
 
-    i2cReadVect(ADXL345_ADDR, ADXL345_DATA_ADDR, ADXL345_BYTES_SENT, data);
+    i2c_read_vect(ADXL345_ADDR, ADXL345_DATA_ADDR, ADXL345_BYTES_SENT, data);
 
     accel_data->x = data[0] | (data[1] << 8);
     accel_data->y = data[2] | (data[3] << 8);
