@@ -50,49 +50,47 @@ void ADXL345_get_data(struct accel* accel_data) {
 }
 
 void ADXL345_calibrate(uint8_t max_samples_avg_exp, uint8_t batches_calibration_exp) {
-    int avg_x = 0, avg_y = 0, avg_z = 0;
-
-    int avg_x_temp = 0, avg_y_temp = 0, avg_z_temp = 0;
-    int avg_x_acc = 0, avg_y_acc = 0, avg_z_acc = 0;
     struct accel accel_data;
-
+    int avgs_axis[_COUNT_AXIS];
     unsigned int batch, i;
-    for (batch = 0; batch < (1 << batches_calibration_exp); batch++) {
-        for (i = 0; i < (1 << max_samples_avg_exp); i++) {
-            ADXL345_get_data(&accel_data);
-            avg_x_acc += accel_data.x;
-            avg_y_acc += accel_data.y;
-            avg_z_acc += accel_data.z;
-        }
-        avg_x_temp = avg_x_acc >> max_samples_avg_exp;
-        avg_y_temp = avg_y_acc >> max_samples_avg_exp;
-        avg_z_temp = avg_z_acc >> max_samples_avg_exp;
-        avg_x_acc = 0;
-        avg_y_acc = 0;
-        avg_z_acc = 0;
+    enum axis axis_index;
+    for (axis_index =  X_AXIS; axis_index < _COUNT_AXIS; axis_index++) {
+        for (batch = 0; batch < (1 << batches_calibration_exp); batch++) {
+            int avg_acc = 0;
+            for (i = 0; i < (1 << max_samples_avg_exp); i++) {
+                ADXL345_get_data(&accel_data);
+                switch (axis_index) {
+                    case X_AXIS:
+                        avg_acc += accel_data.x;
+                        break;
+                    case Y_AXIS:
+                        avg_acc += accel_data.y;
+                        break;
+                    case Z_AXIS:
+                        avg_acc += accel_data.z;
+                        break;
+                }
+            }
+            int avg_temp = avg_acc >> max_samples_avg_exp;
 
-        if (batch) {
-            avg_x = (avg_x_temp + avg_x) / 2;
-            avg_y = (avg_y_temp + avg_y) / 2;
-            avg_z = (avg_z_temp + avg_z) / 2;
-        } else {
-            avg_x = avg_x_temp;
-            avg_y = avg_y_temp;
-            avg_z = avg_z_temp;
+            if (batch) {
+                avgs_axis[axis_index] = (avg_temp + avgs_axis[axis_index]) >> 1;
+            } else {
+                avgs_axis[axis_index] = avg_temp;
+            }
         }
     }
 
-    int avgs[3] = {avg_x, avg_y, avg_z};
-    // tem q levar em consideração o sentido dos outros eixos, n so o sentido do eixo com maior valor absoluto
-    if (max(avgs, 3) > POS_VAL_ACCEL_NO_OFFSET) {
-        const unsigned int max_axis_index = max_index(avgs, 3);
-        offset = (struct accel){(max_axis_index != 0) ? - avg_x : GRAVITY_ACCEL - avg_x, (max_axis_index != 1) ? - avg_y : GRAVITY_ACCEL - avg_y, (max_axis_index != 2) ? - avg_z : GRAVITY_ACCEL - avg_z};
-        return;
-    }
-
-    if (min(avgs, 3) < NEG_VAL_ACCEL_NO_OFFSET) {
-        const unsigned int min_axis_index = min_index(avgs, 3);
-        offset = (struct accel){(min_axis_index != 0) ? avg_x : -(GRAVITY_ACCEL + avg_x), (min_axis_index != 1) ? avg_y : -(GRAVITY_ACCEL + avg_y), (min_axis_index != 2) ? avg_z : -(GRAVITY_ACCEL + avg_z)};
+    if (module(max(avgs_axis, _COUNT_AXIS, 1)) > VAL_ACCEL_NO_OFFSET) {
+        const enum axis max_axis_index = (enum axis)max_index(avgs_axis, _COUNT_AXIS, 1);
+        const int axis_x_signal = (avgs_axis[X_AXIS] < 0) ? -1 : 1;
+        const int axis_y_signal = (avgs_axis[Y_AXIS] < 0) ? -1 : 1;
+        const int axis_z_signal = (avgs_axis[Z_AXIS] < 0) ? -1 : 1;
+        offset = (struct accel) {
+            (max_axis_index != X_AXIS) ? - avgs_axis[X_AXIS] : axis_x_signal * (GRAVITY_ACCEL - module(avgs_axis[X_AXIS])),
+            (max_axis_index != Y_AXIS) ? - avgs_axis[Y_AXIS] : axis_y_signal * (GRAVITY_ACCEL - module(avgs_axis[Y_AXIS])),
+            (max_axis_index != Z_AXIS) ? - avgs_axis[Z_AXIS] : axis_z_signal * (GRAVITY_ACCEL - module(avgs_axis[Z_AXIS]))
+        };
         return;
     }
 

@@ -11,9 +11,10 @@
 #define MAX_SAMPLES_AVG_EXP 3 // 2 ^ 3 = 8
 #define BATCHES_CALIBRATION_EXP 5 // 2 ^ 5 = 32
 
-#define MAX_AVG_NO_ACCEL 13 // 0.5 / 9.8 * 256 (accelerometer sees g's, not m/s², so 9.8 m/s² = 1 g = 256 in register)
-#define MIN_AVG_FACE_UP 242 // 9.3 / 9.8 * 256
-#define MAX_AVG_FACE_UP 269 // 10.3 / 9.8 * 256
+// (accelerometer sees g's, not m/s², so 9.8 m/s² = 1 g = 256 in register)
+#define MAX_AVG_NO_ACCEL 50 // 0.5 / 9.8 * 256 = 13
+#define MIN_AVG_FACE_UP 200 // 9.3 / 9.8 * 256 = 242 (200 is just to work for now)
+#define MAX_AVG_FACE_UP 290 // 10.3 / 9.8 * 256 = 269 (290 is just to work for now)
 
 enum faces {
     FACE_1,
@@ -86,6 +87,7 @@ int main(void) {
 
         if (face_up != MOVING) {
             play_face_sound();
+            face_up = MOVING;
         }
 
         green_led_toggle();
@@ -95,6 +97,7 @@ int main(void) {
 
 void dice_has_fallen() {
     set_timer_interruption(TIMER_A0, 0);
+    reset_timer(TIMER_A1);
     set_timer_interruption(TIMER_A1, 1);
 }
 
