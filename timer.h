@@ -1,8 +1,8 @@
 /*
  * timer.h
  *
- *  Created on: Nov 28, 2024
- *      Author: nikomania
+ *  Created on: 10 de fev de 2025
+ *      Author: thiag
  */
 
 #ifndef TIMER_H_
@@ -14,14 +14,19 @@ typedef void (*callbackFunc)(void);
 
 #define ACLK_FREQ 32768
 #define MAX_COUNT 0xFFFF
+enum timers {
+    TIMER_A0,
+    TIMER_A1,
+    _COUNT_TIMERS
+};
 
-void init_timerA0(void);
+void init_timer(enum timers timer);
+void set_timer_maxtime(enum timers timer, unsigned int time_ms);
+void set_callback_timer(enum timers timer, callbackFunc timer_callback_new);
 
-unsigned int get_timerA0();
-void set_timerA0_maxtime(unsigned int time_ms);
-void set_callback_timerA0(callbackFunc timer_callback_new);
-void reset_timerA0();
-void wait_timerA0();
-void set_timerA0_interruption(int is_interruptable);
+void set_timer_interruption(enum timers timer, int is_interruptable);
+void reset_timer(enum timers timer);
+void wait_timer(enum timers timer);
+unsigned int get_timer(enum timers timer);
 
 #endif /* TIMER_H_ */

@@ -18,13 +18,25 @@
 #define ADXL345_DEVID_VAL 0xE5
 #define ADXL345_POWER_CTL 0x2D
 
+#define POS_VAL_ACCEL_NO_OFFSET 128
+#define NEG_VAL_ACCEL_NO_OFFSET -128
+#define GRAVITY_ACCEL 256
+
 struct accel {
     int x;
     int y;
     int z;
 };
 
+enum axis {
+    X_AXIS,
+    Y_AXIS,
+    Z_AXIS,
+    _COUNT_AXIS
+};
+
 void init_ADXL345();
+void ADXL345_calibrate(uint8_t max_samples_avg, uint8_t batches_calibration);
 void ADXL345_check_devid();
 void ADXL345_check_i2c();
 void ADXL345_get_data(struct accel* accel_data);
