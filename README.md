@@ -20,8 +20,8 @@ int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
 
     init_gpio();
-    initI2C_Master();
-    ADXL345Config();
+    init_i2c();
+    init_ADXL345();
 
     struct accel accel_data;
     volatile int clicked = 0;
@@ -31,7 +31,7 @@ int main(void) {
 
     while(1) {
         clicked = is_button_clicked();
-        ADXL345GetData(&accel_data);
+        ADXL345_get_data(&accel_data);
         x = accel_data.x;
         y = accel_data.y;
         z = accel_data.z;
